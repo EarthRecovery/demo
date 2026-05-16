@@ -711,115 +711,296 @@ button {
   font-family: Consolas, "Courier New", monospace;
 }
 
-.board {
-  position: relative;
-  min-height: 560px;
-  border: 1px solid rgba(120, 178, 255, 0.16);
-  border-radius: 26px;
-  background:
-    radial-gradient(circle at top, rgba(89, 167, 255, 0.12), transparent 35%),
-    linear-gradient(180deg, rgba(4, 25, 40, 0.9), rgba(2, 13, 23, 0.96));
-  overflow: hidden;
-}
-
-.board-grid {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(89, 167, 255, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(89, 167, 255, 0.09) 1px, transparent 1px);
-  background-size: 34px 34px;
-  opacity: 0.45;
-}
-
-.board-trace {
-  position: absolute;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(87, 240, 209, 0.05), rgba(87, 240, 209, 0.55));
-  opacity: 0.7;
-}
-
-.board-trace-a {
-  left: 16%;
-  top: 34%;
-  width: 56%;
-  height: 2px;
-  animation: scan 4.8s linear infinite;
-}
-
-.board-trace-b {
-  left: 26%;
-  top: 68%;
-  width: 42%;
-  height: 2px;
-  animation: scan 5.6s linear infinite reverse;
-}
-
-.component {
-  position: absolute;
-  padding: 7px 8px;
-  border: 1px solid rgba(120, 178, 255, 0.2);
-  border-radius: 13px;
-  background: rgba(5, 15, 28, 0.92);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.component.active {
-  border-color: rgba(255, 201, 108, 0.72);
-  box-shadow:
-    0 0 0 1px rgba(255, 201, 108, 0.16),
-    0 0 22px rgba(255, 201, 108, 0.28);
-  transform: scale(1.05);
-  animation: pulse 1s ease infinite;
-}
-
-.component.done {
-  border-color: rgba(87, 240, 209, 0.45);
-  background:
-    linear-gradient(135deg, rgba(11, 51, 59, 0.78), rgba(4, 22, 31, 0.9)),
-    rgba(5, 15, 28, 0.92);
-}
-
-.component-id,
-.component-model {
-  display: block;
+.schematic-shell {
   position: relative;
   z-index: 1;
-}
-
-.component-id {
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 0.64rem;
-  color: var(--cyan);
-}
-
-.component-model {
-  margin-top: 5px;
-  overflow: hidden;
-  font-size: 0.58rem;
-  color: #bdd7f2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.board-legend {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
-  display: flex;
+  display: grid;
   gap: 16px;
-  flex-wrap: wrap;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(4, 14, 26, 0.82);
 }
 
-.board-legend span {
+.schematic-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.canvas-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.canvas-reset {
+  padding: 10px 14px;
+  border: 1px solid rgba(120, 178, 255, 0.18);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(7, 17, 32, 0.82);
+  transition:
+    opacity 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.canvas-reset:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.canvas-reset:not(:disabled):hover {
+  border-color: rgba(87, 240, 209, 0.3);
+  background: rgba(11, 28, 43, 0.92);
+}
+
+.schematic-canvas {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 920 / 600;
+  border: 1px solid rgba(120, 178, 255, 0.14);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(92, 198, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(2, 7, 11, 0.98), rgba(1, 4, 8, 1));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 20px 40px rgba(36, 102, 147, 0.06);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.schematic-canvas.dragging {
+  cursor: grabbing;
+}
+
+.schematic-stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.schematic-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-dot {
+  fill: rgba(146, 182, 214, 0.24);
+}
+
+.schematic-wire {
+  fill: none;
+  stroke: rgba(157, 204, 230, 0.82);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(98, 175, 217, 0.18));
+}
+
+.junction-node {
+  fill: #59a7ff;
+  filter: drop-shadow(0 0 12px rgba(89, 167, 255, 0.6));
+}
+
+.schematic-terminal .terminal-shape {
+  fill: #ff1d28;
+  stroke: rgba(255, 118, 125, 0.8);
+  stroke-width: 2;
+}
+
+.terminal-label {
+  fill: rgba(107, 45, 49, 0.92);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 21px;
+  letter-spacing: 0.08em;
+}
+
+.terminal-label.rotated {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(-90deg);
+}
+
+.schematic-part {
+  --part-accent: rgba(145, 206, 230, 0.94);
+  --part-fill: rgba(8, 18, 24, 0.92);
+  --part-glow-opacity: 0;
+}
+
+.schematic-part.pending {
+  opacity: 0.9;
+}
+
+.schematic-part.active {
+  --part-accent: rgba(255, 201, 108, 0.96);
+  --part-fill: rgba(25, 20, 11, 0.95);
+  --part-glow-opacity: 1;
+}
+
+.schematic-part.done {
+  --part-accent: rgba(100, 240, 175, 0.94);
+  --part-fill: rgba(7, 25, 19, 0.92);
+}
+
+.part-glow {
+  fill: rgba(255, 201, 108, 0.08);
+  opacity: var(--part-glow-opacity);
+}
+
+.schematic-part.active .part-glow {
+  animation: schematic-glow 1s ease infinite;
+}
+
+.schematic-part.active .symbol-box,
+.schematic-part.active .symbol-line {
+  filter: drop-shadow(0 0 10px rgba(255, 201, 108, 0.26));
+}
+
+.symbol-box,
+.symbol-line,
+.symbol-arrow {
+  stroke: var(--part-accent);
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.symbol-box {
+  fill: var(--part-fill);
+}
+
+.symbol-arrow {
+  fill: var(--part-accent);
+  stroke: none;
+}
+
+.symbol-node,
+.part-pad {
+  fill: #ff2c33;
+}
+
+.symbol-line.faint {
+  opacity: 0.35;
+}
+
+.part-ref,
+.part-caption,
+.part-model,
+.part-next-model {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.part-ref {
+  fill: rgba(255, 80, 88, 0.95);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+.part-caption {
+  fill: rgba(165, 206, 230, 0.86);
+  font-size: 13px;
+}
+
+.part-model {
+  fill: rgba(232, 214, 196, 0.9);
+  font-size: 13px;
+}
+
+.part-next-model {
+  fill: rgba(255, 201, 108, 0.96);
+  font-size: 13px;
+}
+
+.focus-card,
+.schematic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid rgba(120, 178, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(4, 13, 24, 0.72);
+}
+
+.focus-card {
+  justify-content: space-between;
+}
+
+.focus-card.active {
+  border-color: rgba(255, 201, 108, 0.34);
+  box-shadow: 0 0 0 1px rgba(255, 201, 108, 0.08);
+}
+
+.focus-card.done {
+  border-color: rgba(100, 240, 175, 0.28);
+}
+
+.focus-card h3 {
+  margin: 6px 0 0;
+  font-size: 1.1rem;
+}
+
+.focus-kicker {
+  margin: 0;
+  color: var(--cyan);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.focus-flow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.focus-flow > div,
+.focus-metrics > div {
+  display: grid;
+  gap: 6px;
+}
+
+.focus-flow span,
+.focus-metrics span,
+.legend-copy {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.focus-flow strong,
+.focus-metrics strong {
+  font-size: 0.94rem;
+}
+
+.flow-arrow {
+  color: var(--amber);
+  font-size: 1.3rem;
+}
+
+.focus-metrics {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.schematic-legend {
+  justify-content: flex-start;
+}
+
+.schematic-legend span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted);
+}
+
+.legend-copy {
+  margin-left: auto;
+  max-width: 320px;
 }
 
 .dot {
@@ -960,17 +1141,6 @@ button {
   animation: rise-in 420ms ease;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1.05);
-  }
-
-  50% {
-    transform: scale(1.1);
-  }
-}
-
 @keyframes scan {
   0% {
     opacity: 0.15;
@@ -984,6 +1154,17 @@ button {
   100% {
     opacity: 0.15;
     transform: translateX(8px);
+  }
+}
+
+@keyframes schematic-glow {
+  0%,
+  100% {
+    opacity: 0.32;
+  }
+
+  50% {
+    opacity: 0.9;
   }
 }
 
@@ -1036,8 +1217,17 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .board {
-    min-height: 420px;
+  .schematic-toolbar,
+  .focus-card {
+    align-items: stretch;
+  }
+
+  .schematic-toolbar {
+    flex-direction: column;
+  }
+
+  .canvas-reset {
+    width: 100%;
   }
 
   .bom-row {

@@ -242,6 +242,64 @@ const phaseTemplate = [
   },
 ];
 
+const schematicParts = [
+  { id: "J1", kind: "connector", x: 156, y: 406, caption: "USB-C", labelX: 46, labelY: -14 },
+  { id: "F1", kind: "fuse", x: 248, y: 406, caption: "Fuse", labelX: -18, labelY: 34 },
+  { id: "D5", kind: "protection", x: 336, y: 406, caption: "ESD", labelX: -18, labelY: 34 },
+  { id: "R18", kind: "resistor", x: 418, y: 406, caption: "Sense", labelX: -20, labelY: 34 },
+  { id: "Q2", kind: "mosfet", x: 438, y: 170, caption: "Power MOSFET", labelX: 56, labelY: -8 },
+  { id: "U1", kind: "chip", x: 548, y: 172, w: 124, h: 132, caption: "MCU", labelX: 72, labelY: -18 },
+  { id: "J4", kind: "header", x: 548, y: 60, caption: "SWD", labelX: 40, labelY: -10 },
+  { id: "U3", kind: "chipSmall", x: 742, y: 142, w: 100, h: 70, caption: "Wireless", labelX: 60, labelY: -10 },
+  { id: "C27", kind: "capacitor", x: 832, y: 142, caption: "RF Match", labelX: -12, labelY: 48 },
+  { id: "U12", kind: "chipSmall", x: 742, y: 252, w: 100, h: 70, caption: "NOR Flash", labelX: 58, labelY: -10 },
+  { id: "Y1", kind: "crystal", x: 742, y: 372, caption: "Crystal", labelX: 54, labelY: -10 },
+  { id: "U9", kind: "chipSmall", x: 548, y: 520, w: 122, h: 70, caption: "Audio", labelX: 72, labelY: -10 },
+  { id: "U7", kind: "chip", x: 594, y: 322, w: 104, h: 116, caption: "PMIC", labelX: 68, labelY: -14 },
+  { id: "L4", kind: "inductor", x: 742, y: 322, caption: "Inductor", labelX: -6, labelY: 48 },
+  { id: "C12", kind: "capacitor", x: 694, y: 428, caption: "Input Cap", labelX: 34, labelY: 14 },
+];
+
+const schematicWires = [
+  "M 78 406 L 122 406",
+  "M 190 406 L 222 406",
+  "M 274 406 L 310 406",
+  "M 362 406 L 390 406",
+  "M 446 406 L 468 406",
+  "M 468 406 L 468 228",
+  "M 468 240 L 484 240",
+  "M 468 322 L 538 322",
+  "M 646 322 L 694 322",
+  "M 790 322 L 860 322",
+  "M 694 322 L 694 396",
+  "M 694 460 L 694 520",
+  "M 468 240 L 486 240",
+  "M 610 172 L 686 172",
+  "M 686 172 L 686 142",
+  "M 686 172 L 686 252",
+  "M 686 252 L 692 252",
+  "M 686 172 L 686 372",
+  "M 686 372 L 704 372",
+  "M 548 106 L 548 94",
+  "M 548 238 L 548 480",
+  "M 792 142 L 808 142",
+  "M 856 142 L 886 142",
+];
+
+const schematicTerminals = [
+  { id: "usb-in", x: 56, y: 406, label: "IN", direction: "right" },
+  { id: "vbus", x: 468, y: 52, label: "VBUS", direction: "down", rotateLabel: true },
+  { id: "vout", x: 882, y: 322, label: "3V3", direction: "left" },
+  { id: "rf", x: 902, y: 142, label: "RF", direction: "left" },
+  { id: "gnd", x: 694, y: 542, label: "GND", direction: "up", rotateLabel: true },
+];
+
+const schematicView = {
+  width: 920,
+  height: 600,
+  scale: 1.16,
+};
+
 const initialLog = {
   time: "09:41:06",
   label: "System ready",
@@ -295,6 +353,210 @@ function escapeCsv(value) {
   return `"${String(value).replaceAll('"', '""')}"`;
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function shortenText(value, limit = 18) {
+  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
+}
+
+function clampPanPosition(position, bounds) {
+  return {
+    x: clamp(position.x, -bounds.x, bounds.x),
+    y: clamp(position.y, -bounds.y, bounds.y),
+  };
+}
+
+function getRowStatus(rowId, activeReplacement, completedSet) {
+  if (activeReplacement === rowId) {
+    return "active";
+  }
+
+  if (completedSet.has(rowId)) {
+    return "done";
+  }
+
+  return "pending";
+}
+
+function renderComponentBody(part) {
+  switch (part.kind) {
+    case "connector":
+      return (
+        <>
+          <rect x="-32" y="-18" width="64" height="36" rx="8" className="symbol-box" />
+          <line x1="-40" y1="-10" x2="-32" y2="-10" className="symbol-line" />
+          <line x1="-40" y1="0" x2="-32" y2="0" className="symbol-line" />
+          <line x1="-40" y1="10" x2="-32" y2="10" className="symbol-line" />
+          <line x1="32" y1="-10" x2="40" y2="-10" className="symbol-line" />
+          <line x1="32" y1="0" x2="40" y2="0" className="symbol-line" />
+          <line x1="32" y1="10" x2="40" y2="10" className="symbol-line" />
+        </>
+      );
+    case "fuse":
+      return (
+        <>
+          <line x1="-26" y1="0" x2="-10" y2="0" className="symbol-line" />
+          <path d="M -10 0 C -4 -10, 4 -10, 10 0 C 16 10, 24 10, 30 0" className="symbol-line" />
+        </>
+      );
+    case "protection":
+      return (
+        <>
+          <line x1="-26" y1="0" x2="-16" y2="0" className="symbol-line" />
+          <rect x="-16" y="-16" width="32" height="32" rx="6" className="symbol-box" />
+          <line x1="16" y1="0" x2="26" y2="0" className="symbol-line" />
+          <line x1="-6" y1="-8" x2="6" y2="8" className="symbol-line" />
+          <line x1="-6" y1="8" x2="6" y2="-8" className="symbol-line" />
+        </>
+      );
+    case "resistor":
+      return (
+        <>
+          <line x1="-28" y1="0" x2="-20" y2="0" className="symbol-line" />
+          <path
+            d="M -20 0 L -14 -10 L -8 10 L -2 -10 L 4 10 L 10 -10 L 16 10 L 22 0"
+            className="symbol-line"
+          />
+        </>
+      );
+    case "mosfet":
+      return (
+        <>
+          <line x1="10" y1="-52" x2="10" y2="-18" className="symbol-line" />
+          <line x1="10" y1="18" x2="10" y2="52" className="symbol-line" />
+          <line x1="-30" y1="0" x2="-6" y2="0" className="symbol-line" />
+          <line x1="-6" y1="-28" x2="-6" y2="28" className="symbol-line" />
+          <line x1="10" y1="-28" x2="10" y2="28" className="symbol-line" />
+          <line x1="-6" y1="-28" x2="10" y2="-28" className="symbol-line" />
+          <line x1="-6" y1="28" x2="10" y2="28" className="symbol-line" />
+          <path d="M -2 20 L 8 14 L 8 26 Z" className="symbol-arrow" />
+        </>
+      );
+    case "chip":
+      return (
+        <>
+          <rect x={-part.w / 2} y={-part.h / 2} width={part.w} height={part.h} rx="12" className="symbol-box" />
+          <line x1={-part.w / 2 - 12} y1="-30" x2={-part.w / 2} y2="-30" className="symbol-line" />
+          <line x1={-part.w / 2 - 12} y1="0" x2={-part.w / 2} y2="0" className="symbol-line" />
+          <line x1={-part.w / 2 - 12} y1="30" x2={-part.w / 2} y2="30" className="symbol-line" />
+          <line x1={part.w / 2} y1="-22" x2={part.w / 2 + 12} y2="-22" className="symbol-line" />
+          <line x1={part.w / 2} y1="0" x2={part.w / 2 + 12} y2="0" className="symbol-line" />
+          <line x1={part.w / 2} y1="22" x2={part.w / 2 + 12} y2="22" className="symbol-line" />
+        </>
+      );
+    case "chipSmall":
+      return (
+        <>
+          <rect x={-part.w / 2} y={-part.h / 2} width={part.w} height={part.h} rx="10" className="symbol-box" />
+          <line x1={-part.w / 2 - 10} y1="-16" x2={-part.w / 2} y2="-16" className="symbol-line" />
+          <line x1={-part.w / 2 - 10} y1="16" x2={-part.w / 2} y2="16" className="symbol-line" />
+          <line x1={part.w / 2} y1="-16" x2={part.w / 2 + 10} y2="-16" className="symbol-line" />
+          <line x1={part.w / 2} y1="16" x2={part.w / 2 + 10} y2="16" className="symbol-line" />
+        </>
+      );
+    case "header":
+      return (
+        <>
+          <rect x="-26" y="-16" width="52" height="32" rx="8" className="symbol-box" />
+          <circle cx="-12" cy="0" r="3.6" className="symbol-node" />
+          <circle cx="0" cy="0" r="3.6" className="symbol-node" />
+          <circle cx="12" cy="0" r="3.6" className="symbol-node" />
+        </>
+      );
+    case "inductor":
+      return (
+        <>
+          <line x1="-34" y1="0" x2="-24" y2="0" className="symbol-line" />
+          <path
+            d="M -24 0 C -18 -14, -6 -14, 0 0 C 6 14, 18 14, 24 0 C 30 -14, 42 -14, 48 0"
+            className="symbol-line"
+          />
+        </>
+      );
+    case "capacitor":
+      return (
+        <>
+          <line x1="0" y1="-30" x2="0" y2="-10" className="symbol-line" />
+          <line x1="-16" y1="-10" x2="16" y2="-10" className="symbol-line" />
+          <line x1="-16" y1="10" x2="16" y2="10" className="symbol-line" />
+          <line x1="0" y1="10" x2="0" y2="30" className="symbol-line" />
+        </>
+      );
+    case "crystal":
+      return (
+        <>
+          <line x1="-34" y1="0" x2="-16" y2="0" className="symbol-line" />
+          <rect x="-16" y="-18" width="32" height="36" rx="6" className="symbol-box" />
+          <line x1="16" y1="0" x2="34" y2="0" className="symbol-line" />
+          <line x1="-8" y1="-18" x2="-8" y2="18" className="symbol-line faint" />
+          <line x1="8" y1="-18" x2="8" y2="18" className="symbol-line faint" />
+        </>
+      );
+    default:
+      return null;
+  }
+}
+
+function SchematicPart({ row, part, status }) {
+  const primaryModel = status === "done" ? row.next.model : row.current.model;
+  const secondaryModel = status === "active" ? `-> ${shortenText(row.next.model, 16)}` : null;
+
+  return (
+    <g className={`schematic-part ${status}`} transform={`translate(${part.x} ${part.y})`}>
+      <circle className="part-glow" r="58" />
+      {renderComponentBody(part)}
+      <text x={part.labelX} y={part.labelY} className="part-ref">
+        {row.id}
+      </text>
+      <text x={part.labelX} y={part.labelY + 16} className="part-caption">
+        {part.caption}
+      </text>
+      <text x={part.labelX} y={part.labelY + 34} className="part-model">
+        {shortenText(primaryModel)}
+      </text>
+      {secondaryModel ? (
+        <text x={part.labelX} y={part.labelY + 50} className="part-next-model">
+          {secondaryModel}
+        </text>
+      ) : null}
+      <g className="part-pads">
+        <rect x="-4" y="-4" width="8" height="8" className="part-pad" />
+      </g>
+    </g>
+  );
+}
+
+function SchematicTerminal({ terminal }) {
+  const pointsByDirection = {
+    right: "-28,-18 8,-18 28,0 8,18 -28,18 -40,0",
+    left: "28,-18 -8,-18 -28,0 -8,18 28,18 40,0",
+    down: "-18,-28 18,-28 18,8 0,28 -18,8",
+    up: "-18,28 18,28 18,-8 0,-28 -18,-8",
+  };
+
+  return (
+    <g className="schematic-terminal" transform={`translate(${terminal.x} ${terminal.y})`}>
+      <polygon points={pointsByDirection[terminal.direction]} className="terminal-shape" />
+      <text
+        className={`terminal-label ${terminal.rotateLabel ? "rotated" : ""}`}
+        x={terminal.direction === "right" ? -58 : terminal.direction === "left" ? 56 : 0}
+        y={terminal.direction === "up" ? 48 : terminal.direction === "down" ? -42 : 6}
+        textAnchor={
+          terminal.direction === "right"
+            ? "end"
+            : terminal.direction === "left"
+              ? "start"
+              : "middle"
+        }
+      >
+        {terminal.label}
+      </text>
+    </g>
+  );
+}
+
 function App() {
   const [strategy, setStrategy] = useState("balanced");
   const [workflowStage, setWorkflowStage] = useState("idle");
@@ -305,8 +567,13 @@ function App() {
   const [completedReplacements, setCompletedReplacements] = useState([]);
   const [hasExported, setHasExported] = useState(false);
   const [eventLog, setEventLog] = useState([initialLog]);
+  const [canvasPan, setCanvasPan] = useState({ x: 0, y: 0 });
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [isPanningCanvas, setIsPanningCanvas] = useState(false);
 
   const timersRef = useRef([]);
+  const canvasViewportRef = useRef(null);
+  const canvasDragRef = useRef(null);
   const rows = useMemo(() => buildRows(strategy), [strategy]);
   const summary = useMemo(() => getSummary(rows), [rows]);
   const fileInfo = getFileInfo(uploadedFile);
@@ -319,6 +586,22 @@ function App() {
   const isOptimizing = workflowStage === "optimizing";
   const isOptimized = workflowStage === "optimized";
   const showOptimizationViews = isOptimizing || isOptimized;
+  const completedSet = useMemo(
+    () => new Set(completedReplacements),
+    [completedReplacements],
+  );
+  const lastCompletedId = completedReplacements[completedReplacements.length - 1] ?? null;
+  const activeRow = rows.find((row) => row.id === activeReplacement) ?? null;
+  const focusRow = activeRow ?? rows.find((row) => row.id === lastCompletedId) ?? rows[0];
+  const focusStatus = activeRow ? "active" : lastCompletedId ? "done" : "queued";
+  const panBounds = useMemo(
+    () => ({
+      x: Math.max(0, (viewportSize.width * (schematicView.scale - 1)) / 2),
+      y: Math.max(0, (viewportSize.height * (schematicView.scale - 1)) / 2),
+    }),
+    [viewportSize],
+  );
+  const hasPanOffset = Math.abs(canvasPan.x) > 1 || Math.abs(canvasPan.y) > 1;
 
   const workflowSteps = [
     {
@@ -387,6 +670,45 @@ function App() {
       timersRef.current.forEach((timer) => window.clearTimeout(timer));
     };
   }, []);
+
+  useEffect(() => {
+    const element = canvasViewportRef.current;
+
+    if (!element || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      const nextSize = {
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      };
+
+      setViewportSize((current) =>
+        current.width === nextSize.width && current.height === nextSize.height
+          ? current
+          : nextSize,
+      );
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [showOptimizationViews]);
+
+  useEffect(() => {
+    setCanvasPan((current) => clampPanPosition(current, panBounds));
+  }, [panBounds]);
+
+  useEffect(() => {
+    if (!showOptimizationViews) {
+      setCanvasPan({ x: 0, y: 0 });
+      setIsPanningCanvas(false);
+      canvasDragRef.current = null;
+    }
+  }, [showOptimizationViews]);
 
   function queueTimeout(callback, delay) {
     const id = window.setTimeout(callback, delay);
@@ -569,6 +891,64 @@ function App() {
       },
       ...current.slice(0, 5),
     ]);
+  }
+
+  function handleCanvasPointerDown(event) {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    canvasDragRef.current = {
+      pointerId: event.pointerId,
+      originX: canvasPan.x,
+      originY: canvasPan.y,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+    setIsPanningCanvas(true);
+  }
+
+  function handleCanvasPointerMove(event) {
+    const drag = canvasDragRef.current;
+
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextPosition = clampPanPosition(
+      {
+        x: drag.originX + (event.clientX - drag.startX),
+        y: drag.originY + (event.clientY - drag.startY),
+      },
+      panBounds,
+    );
+
+    setCanvasPan((current) =>
+      current.x === nextPosition.x && current.y === nextPosition.y
+        ? current
+        : nextPosition,
+    );
+  }
+
+  function handleCanvasPointerEnd(event) {
+    const drag = canvasDragRef.current;
+
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    canvasDragRef.current = null;
+    setIsPanningCanvas(false);
+  }
+
+  function handleResetCanvasView() {
+    setCanvasPan({ x: 0, y: 0 });
   }
 
   return (
@@ -852,42 +1232,144 @@ function App() {
             <div className="panel-head">
               <div>
                 <p className="section-kicker">Step 3</p>
-                <h2>Component Replacement View</h2>
+                <h2>Schematic Replacement View</h2>
               </div>
               <span className="status-chip">
                 {completedReplacements.length}/{rows.length} swapped
               </span>
             </div>
 
-            <div className="board">
-              <div className="board-grid" />
-              <div className="board-trace board-trace-a" />
-              <div className="board-trace board-trace-b" />
+            <div className="schematic-shell">
+              <div className="schematic-toolbar">
+                <span className="canvas-hint">
+                  {isPanningCanvas ? "Dragging schematic..." : "Drag canvas to inspect the circuit"}
+                </span>
+                <button
+                  type="button"
+                  className="canvas-reset"
+                  onClick={handleResetCanvasView}
+                  disabled={!hasPanOffset}
+                >
+                  Reset View
+                </button>
+              </div>
 
-              {rows.map((row) => {
-                const isActive = activeReplacement === row.id;
-                const isDone = completedReplacements.includes(row.id);
-
-                return (
-                  <div
-                    key={row.id}
-                    className={`component ${isActive ? "active" : ""} ${isDone ? "done" : ""}`}
-                    style={{
-                      left: `${row.placement.x}%`,
-                      top: `${row.placement.y}%`,
-                      width: `${row.placement.w}%`,
-                      height: `${row.placement.h}%`,
-                    }}
+              <div
+                ref={canvasViewportRef}
+                className={`schematic-canvas ${isPanningCanvas ? "dragging" : ""}`}
+                onPointerDown={handleCanvasPointerDown}
+                onPointerMove={handleCanvasPointerMove}
+                onPointerUp={handleCanvasPointerEnd}
+                onPointerCancel={handleCanvasPointerEnd}
+              >
+                <div
+                  className="schematic-stage"
+                  style={{
+                    transform: `translate3d(${canvasPan.x}px, ${canvasPan.y}px, 0) scale(${schematicView.scale})`,
+                  }}
+                >
+                  <svg
+                    className="schematic-svg"
+                    viewBox={`0 0 ${schematicView.width} ${schematicView.height}`}
+                    role="img"
+                    aria-label="Circuit-style component replacement view"
                   >
-                    <span className="component-id">{row.id}</span>
-                    <span className="component-model">
-                      {isDone ? row.next.model : row.current.model}
-                    </span>
-                  </div>
-                );
-              })}
+                    <defs>
+                      <pattern id="schematic-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1.2" className="grid-dot" />
+                      </pattern>
+                    </defs>
 
-              <div className="board-legend">
+                    <rect
+                      x="0"
+                      y="0"
+                      width={schematicView.width}
+                      height={schematicView.height}
+                      fill="url(#schematic-grid)"
+                    />
+
+                    {schematicWires.map((path) => (
+                      <path key={path} d={path} className="schematic-wire" />
+                    ))}
+
+                    <circle cx="468" cy="406" r="10" className="junction-node" />
+
+                    {schematicTerminals.map((terminal) => (
+                      <SchematicTerminal key={terminal.id} terminal={terminal} />
+                    ))}
+
+                    {schematicParts.map((part) => {
+                      const row = rows.find((item) => item.id === part.id);
+
+                      if (!row) {
+                        return null;
+                      }
+
+                      return (
+                        <SchematicPart
+                          key={part.id}
+                          row={row}
+                          part={part}
+                          status={getRowStatus(part.id, activeReplacement, completedSet)}
+                        />
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+
+              <div className={`focus-card ${focusStatus}`}>
+                <div>
+                  <p className="focus-kicker">
+                    {focusStatus === "active"
+                      ? "Replacing now"
+                      : focusStatus === "done"
+                        ? "Latest replacement"
+                        : "Queued replacement"}
+                  </p>
+                  <h3>
+                    {focusRow.id} / {focusRow.part}
+                  </h3>
+                </div>
+
+                <div className="focus-flow">
+                  <div>
+                    <span>Current</span>
+                    <strong>{focusRow.current.model}</strong>
+                  </div>
+                  <span className="flow-arrow">-&gt;</span>
+                  <div>
+                    <span>Selected</span>
+                    <strong>{focusRow.next.model}</strong>
+                  </div>
+                </div>
+
+                <div className="focus-metrics">
+                  <div>
+                    <span>Vendor</span>
+                    <strong>{focusRow.next.vendor}</strong>
+                  </div>
+                  <div>
+                    <span>Delta</span>
+                    <strong className={focusRow.delta <= 0 ? "delta down" : "delta up"}>
+                      {focusRow.delta <= 0 ? "" : "+"}
+                      {formatMoney(focusRow.delta)}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Status</span>
+                    <strong>
+                      {focusStatus === "active"
+                        ? "Swapping"
+                        : focusStatus === "done"
+                          ? "Updated"
+                          : "Pending"}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="schematic-legend">
                 <span>
                   <i className="dot dot-live" /> Current
                 </span>
@@ -896,6 +1378,9 @@ function App() {
                 </span>
                 <span>
                   <i className="dot dot-done" /> Optimized
+                </span>
+                <span className="legend-copy">
+                  The highlighted device switches from the current model to the selected replacement on the schematic.
                 </span>
               </div>
             </div>

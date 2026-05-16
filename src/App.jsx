@@ -2,6 +2,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const bomRecords = [
   {
+    id: "J4",
+    part: "Debug Header",
+    category: "Interface",
+    current: { model: "SWD-Tag-10", unitPrice: 0.34, vendor: "Samtec" },
+    options: {
+      cost: { model: "FTSH-105", unitPrice: 0.22, vendor: "Samtec" },
+      balanced: { model: "TC2050", unitPrice: 0.58, vendor: "Tag-Connect" },
+      premium: { model: "STDC14", unitPrice: 1.2, vendor: "ST" },
+    },
+    placement: { x: 8, y: 14, w: 11, h: 8 },
+    score: 64,
+  },
+  {
     id: "U1",
     part: "MCU Controller",
     category: "Control",
@@ -11,8 +24,21 @@ const bomRecords = [
       balanced: { model: "STM32H503RB", unitPrice: 7.9, vendor: "ST" },
       premium: { model: "NXP i.MX RT1062", unitPrice: 12.6, vendor: "NXP" },
     },
-    placement: { x: 28, y: 24, w: 22, h: 16 },
+    placement: { x: 22, y: 18, w: 16, h: 12 },
     score: 79,
+  },
+  {
+    id: "C27",
+    part: "RF Matching Capacitor",
+    category: "Passive",
+    current: { model: "2.2pF C0G 0402", unitPrice: 0.03, vendor: "Murata" },
+    options: {
+      cost: { model: "2.2pF C0G 0402", unitPrice: 0.02, vendor: "Walsin" },
+      balanced: { model: "2.4pF C0G 0402", unitPrice: 0.04, vendor: "Murata" },
+      premium: { model: "2.2pF High-Q 0201", unitPrice: 0.09, vendor: "Johanson" },
+    },
+    placement: { x: 44, y: 16, w: 9, h: 7 },
+    score: 58,
   },
   {
     id: "U3",
@@ -24,8 +50,47 @@ const bomRecords = [
       balanced: { model: "ESP32-C6-WROOM", unitPrice: 3.9, vendor: "Espressif" },
       premium: { model: "nRF7002", unitPrice: 6.5, vendor: "Nordic" },
     },
-    placement: { x: 58, y: 18, w: 18, h: 14 },
+    placement: { x: 58, y: 16, w: 14, h: 11 },
     score: 74,
+  },
+  {
+    id: "Y1",
+    part: "System Crystal",
+    category: "Clock",
+    current: { model: "40MHz 10ppm", unitPrice: 0.18, vendor: "Epson" },
+    options: {
+      cost: { model: "40MHz 20ppm", unitPrice: 0.11, vendor: "TXC" },
+      balanced: { model: "40MHz TCXO", unitPrice: 0.46, vendor: "Abracon" },
+      premium: { model: "40MHz Low-Jitter TCXO", unitPrice: 0.88, vendor: "SiTime" },
+    },
+    placement: { x: 76, y: 16, w: 10, h: 7 },
+    score: 69,
+  },
+  {
+    id: "U12",
+    part: "NOR Flash",
+    category: "Memory",
+    current: { model: "W25Q128JV", unitPrice: 0.92, vendor: "Winbond" },
+    options: {
+      cost: { model: "XT25F128B", unitPrice: 0.61, vendor: "XTX" },
+      balanced: { model: "W25Q256JV", unitPrice: 1.24, vendor: "Winbond" },
+      premium: { model: "MX25L51245G", unitPrice: 2.86, vendor: "Macronix" },
+    },
+    placement: { x: 18, y: 34, w: 15, h: 10 },
+    score: 72,
+  },
+  {
+    id: "R18",
+    part: "Current Sense Resistor",
+    category: "Passive",
+    current: { model: "10mOhm 1206", unitPrice: 0.09, vendor: "Vishay" },
+    options: {
+      cost: { model: "10mOhm 1206", unitPrice: 0.05, vendor: "Yageo" },
+      balanced: { model: "5mOhm 1206", unitPrice: 0.11, vendor: "Bourns" },
+      premium: { model: "3mOhm 2512", unitPrice: 0.22, vendor: "Vishay" },
+    },
+    placement: { x: 40, y: 36, w: 10, h: 7 },
+    score: 61,
   },
   {
     id: "U7",
@@ -37,7 +102,7 @@ const bomRecords = [
       balanced: { model: "MPM3695", unitPrice: 3.6, vendor: "MPS" },
       premium: { model: "LTC3370", unitPrice: 8.7, vendor: "ADI" },
     },
-    placement: { x: 34, y: 58, w: 20, h: 13 },
+    placement: { x: 18, y: 54, w: 14, h: 10 },
     score: 71,
   },
   {
@@ -50,8 +115,73 @@ const bomRecords = [
       balanced: { model: "22uF X7R 0805", unitPrice: 0.18, vendor: "Murata" },
       premium: { model: "47uF Polymer 1206", unitPrice: 0.49, vendor: "Panasonic" },
     },
-    placement: { x: 62, y: 54, w: 14, h: 10 },
+    placement: { x: 58, y: 34, w: 12, h: 8 },
     score: 63,
+  },
+  {
+    id: "D5",
+    part: "ESD Protection Array",
+    category: "Protection",
+    current: { model: "USBLC6-2SC6", unitPrice: 0.16, vendor: "ST" },
+    options: {
+      cost: { model: "PESD5V0S2UT", unitPrice: 0.11, vendor: "Nexperia" },
+      balanced: { model: "TPD2EUSB30", unitPrice: 0.19, vendor: "TI" },
+      premium: { model: "RClamp0524P", unitPrice: 0.34, vendor: "Semtech" },
+    },
+    placement: { x: 78, y: 34, w: 10, h: 7 },
+    score: 66,
+  },
+  {
+    id: "Q2",
+    part: "Power MOSFET",
+    category: "Power",
+    current: { model: "AO3400A", unitPrice: 0.07, vendor: "Alpha & Omega" },
+    options: {
+      cost: { model: "CJ2302", unitPrice: 0.04, vendor: "CJ" },
+      balanced: { model: "SiA446DJ", unitPrice: 0.11, vendor: "Vishay" },
+      premium: { model: "BSC340N08NS3", unitPrice: 0.32, vendor: "Infineon" },
+    },
+    placement: { x: 76, y: 54, w: 11, h: 8 },
+    score: 62,
+  },
+  {
+    id: "L4",
+    part: "Power Inductor",
+    category: "Power",
+    current: { model: "4.7uH 6A", unitPrice: 0.24, vendor: "Coilcraft" },
+    options: {
+      cost: { model: "4.7uH 4A", unitPrice: 0.16, vendor: "Sunlord" },
+      balanced: { model: "6.8uH 6A", unitPrice: 0.27, vendor: "Coilcraft" },
+      premium: { model: "4.7uH 10A Molded", unitPrice: 0.54, vendor: "TDK" },
+    },
+    placement: { x: 38, y: 54, w: 12, h: 9 },
+    score: 68,
+  },
+  {
+    id: "U9",
+    part: "Audio Codec",
+    category: "Audio",
+    current: { model: "NAU8822L", unitPrice: 1.94, vendor: "Nuvoton" },
+    options: {
+      cost: { model: "ES8311", unitPrice: 1.16, vendor: "Everest" },
+      balanced: { model: "SGTL5000", unitPrice: 2.34, vendor: "NXP" },
+      premium: { model: "ALC5686", unitPrice: 3.82, vendor: "Realtek" },
+    },
+    placement: { x: 56, y: 54, w: 15, h: 10 },
+    score: 73,
+  },
+  {
+    id: "F1",
+    part: "Resettable Fuse",
+    category: "Protection",
+    current: { model: "1.1A MF-R110", unitPrice: 0.14, vendor: "Bourns" },
+    options: {
+      cost: { model: "0.75A MF-R075", unitPrice: 0.1, vendor: "Bourns" },
+      balanced: { model: "1.5A nanoSMD", unitPrice: 0.18, vendor: "Littelfuse" },
+      premium: { model: "eFuse TPS25947", unitPrice: 1.42, vendor: "TI" },
+    },
+    placement: { x: 12, y: 78, w: 10, h: 7 },
+    score: 65,
   },
   {
     id: "J1",
@@ -63,7 +193,7 @@ const bomRecords = [
       balanced: { model: "DX07S024", unitPrice: 0.73, vendor: "JAE" },
       premium: { model: "124019772112A", unitPrice: 1.18, vendor: "Amphenol" },
     },
-    placement: { x: 10, y: 78, w: 18, h: 8 },
+    placement: { x: 34, y: 80, w: 16, h: 7 },
     score: 67,
   },
 ];
@@ -349,6 +479,10 @@ function App() {
       }, index * 1400);
     });
 
+    const swapStartDelay = 3800;
+    const swapInterval = 520;
+    const swapSettleDelay = 260;
+
     rows.forEach((row, index) => {
       queueTimeout(() => {
         setActivePhase(3);
@@ -362,11 +496,11 @@ function App() {
           },
           ...current.slice(0, 5),
         ]);
-      }, 4200 + index * 950);
+      }, swapStartDelay + index * swapInterval);
 
       queueTimeout(() => {
         setCompletedReplacements((current) => [...new Set([...current, row.id])]);
-      }, 4700 + index * 950);
+      }, swapStartDelay + swapSettleDelay + index * swapInterval);
     });
 
     queueTimeout(() => {
@@ -380,7 +514,7 @@ function App() {
         },
         ...current.slice(0, 5),
       ]);
-    }, 4700 + rows.length * 950);
+    }, swapStartDelay + swapSettleDelay + rows.length * swapInterval);
   }
 
   function handleOutputBom() {
@@ -397,7 +531,7 @@ function App() {
       "Optimized Model",
       "Optimized Vendor",
       "Optimized Unit Price",
-      "Delta",
+      "Delta (estimate)",
       "Strategy",
     ];
 
@@ -589,7 +723,7 @@ function App() {
                 <span>Component</span>
                 <span>Current</span>
                 <span>Suggested</span>
-                <span>Delta</span>
+                <span>Delta (estimate)</span>
               </div>
 
               {rows.map((row) => {
@@ -793,7 +927,7 @@ function App() {
               </div>
 
               <div className="insight-card compact">
-                <span>Total delta</span>
+                <span>Total delta (estimate)</span>
                 <strong className={summary.delta <= 0 ? "delta down" : "delta up"}>
                   {summary.delta <= 0 ? "" : "+"}
                   {formatMoney(summary.delta)}
